@@ -1,0 +1,7 @@
+class=16
+top=5
+train  = data/slyz/train.list
+valid  = data/slyz/test.list
+labels = data/slyz/labels.txt
+names  = data/slyz/slyz.names
+backup = backup/
