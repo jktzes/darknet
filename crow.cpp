@@ -3,26 +3,21 @@
 #include <sstream>
 #include <iterator>
 #include <vector>
-#include <nlohmann/json.hpp>
 #include "crow.h"
 #include "./src/yolo_v2_class.hpp"
-using json = nlohmann::json;
 
-
-crow::response return_result(std::vector<bbox_t> const result_vec, std::vector<std::string> const obj_names) {
-	json detection_json = json::object();
-	json detection_json_single = json::object();
+crow::json::wvalue return_result(std::vector<bbox_t> const result_vec, std::vector<std::string> const obj_names) {
+	crow::json::wvalue detection_json;
 	for (auto &i : result_vec) {
-		detection_json_single["obj"] = i.obj_id;
+		crow::json::wvalue detection_json_single;
+		detection_json_single["id"] = i.obj_id;
 		detection_json_single["x"] = i.x;
 		detection_json_single["y"] = i.y;
 		detection_json_single["w"] = i.w;
 		detection_json_single["h"] = i.h;
 		detection_json_single["prob"] = i.prob;
-		detection_json.push_back(detection_json_single);
 	}
-	detection_crow = detection_json.dump();
-	return detection_crow;
+	return detection_json;
 }
 
 std::vector<std::string> objects_names_from_file(std::string const filename) {
@@ -45,8 +40,8 @@ int main(int argc, char* argv[])
 		//initiate a vector variable called detection that will only contain bbox_t type data 
 		std::string path = "./data/test/slyz" + filename + ".jpg";		
 		std::vector<bbox_t> detection = detector.detect(path, 0.5, 0);
-		json result = return_result(detection, obj_names);
-		return result;
+		auto json = return_result(detection, obj_names);
+		return json;
 		});
 
 	app.port(18080).multithreaded().run();
