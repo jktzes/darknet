@@ -9,13 +9,12 @@
 crow::json::wvalue return_result(std::vector<bbox_t> const result_vec, std::vector<std::string> const obj_names) {
 	crow::json::wvalue detection_json;
 	for (auto &i : result_vec) {
-		crow::json::wvalue detection_json_single;
-		detection_json_single["id"] = i.obj_id;
-		detection_json_single["x"] = i.x;
-		detection_json_single["y"] = i.y;
-		detection_json_single["w"] = i.w;
-		detection_json_single["h"] = i.h;
-		detection_json_single["prob"] = i.prob;
+		detection_json[i].obj = i.obj_id;
+		detection_json["x"] = i.x;
+		detection_json["y"] = i.y;
+		detection_json["w"] = i.w;
+		detection_json["h"] = i.h;
+		detection_json["prob"] = i.prob;
 	}
 	return detection_json;
 }
@@ -42,7 +41,7 @@ int main(int argc, char* argv[])
 		std::vector<bbox_t> detection = detector.detect(path, 0.5, 0);
 		auto json = return_result(detection, obj_names);
 		return json;
-		});
+			});
 
 	app.port(18080).multithreaded().run();
 }
