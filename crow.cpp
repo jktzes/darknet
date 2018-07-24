@@ -9,7 +9,7 @@
 crow::json::wvalue return_result(std::vector<bbox_t> const result_vec, std::vector<std::string> const obj_names) {
 	crow::json::wvalue detection_json;
 	for (auto &i : result_vec) {
-		detection_json[i].obj = i.obj_id;
+		detection_json["obj"] = i.obj_id;
 		detection_json["x"] = i.x;
 		detection_json["y"] = i.y;
 		detection_json["w"] = i.w;
