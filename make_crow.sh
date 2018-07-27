@@ -2,5 +2,5 @@
 if [ `uname` = "Darwin" ]; then
 	clang++ -std=c++11 -lboost_system -pthread -o crow crow.cpp darknet.so 
 elif [ `uname` = "Linux" ]; then
-	g++ -std=c++11 -lboost_system -pthread -o crow crow.cpp darknet.so 
+	g++ -std=c++11 -pthread -o crow crow.cpp darknet.so -lboost_system
 fi
