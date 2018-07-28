@@ -43,5 +43,9 @@ int main(int argc, char* argv[])
 		return json;
 			});
 
-	app.port(18080).multithreaded().run();
+	app.port(3205).multithreaded().run();
 }
+
+//TODO: prevent the server from crashing when the file to be recognized does not exist
+
+
