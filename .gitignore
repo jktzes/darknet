@@ -5,6 +5,9 @@
 *.png
 *.so
 *.weights
+crow
+darknet
+uselib
 mnist/
 data/
 caffe/
