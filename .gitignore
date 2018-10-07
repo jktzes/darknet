@@ -5,6 +5,7 @@
 *.png
 *.so
 *.weights
+tags
 crow
 darknet
 uselib
