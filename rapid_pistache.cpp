@@ -6,17 +6,6 @@
 
 using namespace Pistache;
 
-class HelloHandler : public Http::Handler {
-public:
-
-    HTTP_PROTOTYPE(HelloHandler)
-
-    void onRequest(const Http::Request& request, Http::ResponseWriter response) {
-        UNUSED(request);
-        response.send(Pistache::Http::Code::Ok, generate_json());
-    }
-};
-
 std::string generate_json() {
     using namespace rapidjson;
 	Document document;
@@ -37,7 +26,18 @@ std::string generate_json() {
 	Writer<StringBuffer> writer(buffer);
 	document.Accept(writer);
 	return buffer.GetString();
-}
+};
+
+class HelloHandler : public Http::Handler {
+public:
+
+    HTTP_PROTOTYPE(HelloHandler)
+
+    void onRequest(const Http::Request& request, Http::ResponseWriter response) {
+        UNUSED(request);
+        response.send(Pistache::Http::Code::Ok, generate_json());
+    }
+};
 
 int main() {
     Pistache::Address addr(Pistache::Ipv4::any(), Pistache::Port(3205));
