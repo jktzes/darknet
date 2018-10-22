@@ -3,6 +3,11 @@
 #include <sstream>
 #include <iterator>
 #include <vector>
+
+//dependencies to check if file exists
+#include <sys/types.h>
+#include <sys/stat.h>
+
 #include "crow.h"
 #include "./src/yolo_v2_class.hpp"
 #include "rapidjson/document.h"
@@ -65,9 +70,13 @@ int main(int argc, char* argv[])
 	CROW_ROUTE(app, "/detect/<str>")([&detector, &obj_names](std::string filename){
 		//initiate a vector variable called detection that will only contain bbox_t type data 
 		std::string path = "./data/test/slyz" + filename + ".jpg";		
-		std::vector<bbox_t> detection = detector.detect(path, 0.5, 0);
-		auto json = return_result(detection, obj_names);
-		return json;
+		struct stat info;
+		if(stat(path, &info) !=0)
+		    return "directory does not exist";
+		else 
+		    std::vector<bbox_t> detection = detector.detect(path, 0.5, 0);
+		    auto json = return_result(detection, obj_names);
+		    return json;
 			});
 
 	app.port(3205).multithreaded().run();
