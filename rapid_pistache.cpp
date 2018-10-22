@@ -9,34 +9,42 @@
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
 
-using namespace Pistache;
+using namespace Pistache; 
 
-std::string generate_json(std::vector<bbox_t> const result_vec, std::vector<std::string> const obj_names) {
+std:string write_json(std::vector<bbox_t> const result_vec, std::vector<std::string> const obj_names) {
     using namespace rapidjson;
-	Document json_response;
-	Value response;
-	Value annotations;
-	Value annotation_array;
-	Document::AllocatorType& allocator = json_response.GetAllocator();
+    using namespace std;
+    StringBuffer s;
+    Writer<StringBuffer> writer(s);
 
-	json_response.SetObject();
-	response.SetObject();
-	annotations.SetObject();
-	annotation_array.SetArray();
+    writer.StartObject();
+        writer.Key("url");
+        writer.String("some.jpg");
+        writer.Key("response");
+        writer.StartObject();
+                writer.Key("annotations");
+                writer.StartArray();
+		    for (auto &i : result_vec) {
+                        writer.StartObject();
+			    if (obj_names.size() > i.obj_id) { obj_names[i.obj_id] = " - ";}
+                	    writer.Key("width");
+                	    writer.Uint(x.h);
+                	    writer.Key("height");
+                	    writer.Uint(x.h);
+			    writer.Key("left");
+                	    writer.Uint(x.x);
+                	    writer.Key("top");
+                	    writer.Uint(x.y);
+                	    writer.Key("label");
+                	    writer.String(obj_name[x.obj_id]);
+                        writer.EndObject();
+		    };
+                writer.EndArray();
+        writer.EndObject();
+    writer.EndObject();
 
-	for (auto &i : result_vec) {
-	    if (obj_names.size() > i.obj_id) { obj_names[i.obj_id] = " - ";}
-	    Value single_annotation;
-	    single_annotation.
-	    annotation_array.AddMember("width", x.w, allocator)
-
-	    somearray.PushBack("woah", allocator); 
-
-	StringBuffer buffer;
-	Writer<StringBuffer> writer(buffer);
-	document.Accept(writer);
-	return buffer.GetString();
-};
+    s.GetString()
+}
 
 class HelloHandler : public Http::Handler {
 public:
@@ -57,16 +65,6 @@ std::vector<std::string> objects_names_from_file(std::string const filename) { s
 	return file_lines;
 }
 
-void show_console_result(std::vector<bbox_t> const result_vec, std::vector<std::string> const obj_names) {
-    for (auto &i : result_vec) {
-        if (obj_names.size() > i.obj_id) 
-	    std::cout << obj_names[i.obj_id] << " - ";
-        std::cout << "obj_id = " << i.obj_id << ",  x = " << i.x << ", y = " << i.y 
-            << ", w = " << i.w << ", h = " << i.h
-            << std::setprecision(3) << ", prob = " << i.prob << std::endl;
-    }
-}
-
 int main() {
     Pistache::Address addr(Pistache::Ipv4::any(), Pistache::Port(3205));
     auto opts = Pistache::Http::Endpoint::options()
@@ -78,4 +76,21 @@ int main() {
     server.serve();
 
     server.shutdown();
+}
+int main(int argc, char* argv[])
+{
+	crow::SimpleApp app;
+	//initiate a variable of Detector type called detector
+	Detector detector("./cfg/slyz.cfg" , "./slyz_3300.weights"); 
+	auto obj_names = objects_names_from_file("data/slyz.names");
+
+	CROW_ROUTE(app, "/detect/<str>")([&detector, &obj_names](std::string filename){
+		//initiate a vector variable called detection that will only contain bbox_t type data 
+		std::string path = "./data/test/slyz" + filename + ".jpg";		
+		std::vector<bbox_t> detection = detector.detect(path, 0.5, 0);
+		auto json = return_result(detection, obj_names);
+		return json;
+			});
+
+	app.port(3205).multithreaded().run();
 }

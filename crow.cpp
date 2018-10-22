@@ -5,18 +5,45 @@
 #include <vector>
 #include "crow.h"
 #include "./src/yolo_v2_class.hpp"
+#include "rapidjson/document.h"
+#include "rapidjson/writer.h"
+#include "rapidjson/stringbuffer.h"
 
-crow::json::wvalue return_result(std::vector<bbox_t> const result_vec, std::vector<std::string> const obj_names) {
-	crow::json::wvalue detection_json;
-	for (auto &i : result_vec) {
-		detection_json["obj"] = i.obj_id;
-		detection_json["x"] = i.x;
-		detection_json["y"] = i.y;
-		detection_json["w"] = i.w;
-		detection_json["h"] = i.h;
-		detection_json["prob"] = i.prob;
-	}
-	return detection_json;
+std::string return_result(std::vector<bbox_t> const result_vec, std::vector<std::string> const obj_names) {
+    using namespace rapidjson;
+    using namespace std;
+    StringBuffer s;
+    Writer<StringBuffer> writer(s);
+
+    writer.StartObject();
+        writer.Key("url");
+        writer.String("some.jpg");
+        writer.Key("response");
+        writer.StartObject();
+                writer.Key("annotations");
+                writer.StartArray();
+		    for (auto &i : result_vec) {
+                        writer.StartObject();
+			    //if (obj_names.size() > i.obj_id) { obj_names[i.obj_id] = " - ";}
+			    std::string std_string_label = obj_names[i.obj_id];
+			    const char* label = std_string_label.c_str();
+                	    writer.Key("width");
+                	    writer.Uint(i.h);
+                	    writer.Key("height");
+                	    writer.Uint(i.h);
+			    writer.Key("left");
+                	    writer.Uint(i.x);
+                	    writer.Key("top");
+                	    writer.Uint(i.y);
+                	    writer.Key("label");
+                	    writer.String(label);
+                        writer.EndObject();
+		    };
+                writer.EndArray();
+        writer.EndObject();
+    writer.EndObject();
+
+    return s.GetString();
 }
 
 std::vector<std::string> objects_names_from_file(std::string const filename) {
@@ -45,7 +72,3 @@ int main(int argc, char* argv[])
 
 	app.port(3205).multithreaded().run();
 }
-
-//TODO: prevent the server from crashing when the file to be recognized does not exist
-
-
