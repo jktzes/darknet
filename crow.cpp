@@ -3,16 +3,14 @@
 #include <sstream>
 #include <iterator>
 #include <vector>
-
-//dependencies to check if file exists
-#include <sys/types.h>
-#include <sys/stat.h>
-
 #include "crow.h"
 #include "./src/yolo_v2_class.hpp"
 #include "rapidjson/document.h"
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
+
+//to eliminate converting std::__cxx11::string to std::string error
+#define _GLIBCXX_USE_CXX11_ABI 0 
 
 std::string return_result(std::vector<bbox_t> const result_vec, std::vector<std::string> const obj_names) {
     using namespace rapidjson;
@@ -30,8 +28,8 @@ std::string return_result(std::vector<bbox_t> const result_vec, std::vector<std:
 		    for (auto &i : result_vec) {
                         writer.StartObject();
 			    //if (obj_names.size() > i.obj_id) { obj_names[i.obj_id] = " - ";}
-			    std::string std_string_label = obj_names[i.obj_id];
-			    const char* label = std_string_label.c_str();
+			    const std::string label = obj_names[i.obj_id];
+			    const char* label_char = label.c_str();
                 	    writer.Key("width");
                 	    writer.Uint(i.h);
                 	    writer.Key("height");
@@ -41,7 +39,7 @@ std::string return_result(std::vector<bbox_t> const result_vec, std::vector<std:
                 	    writer.Key("top");
                 	    writer.Uint(i.y);
                 	    writer.Key("label");
-                	    writer.String(label);
+                	    writer.String(label_char);
                         writer.EndObject();
 		    };
                 writer.EndArray();
@@ -60,6 +58,12 @@ std::vector<std::string> objects_names_from_file(std::string const filename) {
 	return file_lines;
 }
 
+bool is_file_exist(const char *fileName)
+{
+    std::ifstream infile(fileName);
+    return infile.good();
+}
+
 int main(int argc, char* argv[])
 {
 	crow::SimpleApp app;
@@ -70,14 +74,17 @@ int main(int argc, char* argv[])
 	CROW_ROUTE(app, "/detect/<str>")([&detector, &obj_names](std::string filename){
 		//initiate a vector variable called detection that will only contain bbox_t type data 
 		std::string path = "./data/test/slyz" + filename + ".jpg";		
-		struct stat info;
-		if(stat(path, &info) !=0)
-		    return "directory does not exist";
-		else 
+		const char* path_char = path.c_str();
+
+		if(is_file_exist(path_char)){
 		    std::vector<bbox_t> detection = detector.detect(path, 0.5, 0);
-		    auto json = return_result(detection, obj_names);
+		    std::string json = return_result(detection, obj_names);
 		    return json;
-			});
+		} else { 
+		    std::string no_existing_dir = "directory does not exist";
+		    return no_existing_dir; 
+		}
+		});
 
 	app.port(3205).multithreaded().run();
 }
