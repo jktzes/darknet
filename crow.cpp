@@ -86,5 +86,14 @@ int main(int argc, char* argv[])
 		}
 		});
 
+	CROW_ROUTE(app, "/s3/<str>")([&detector, &obj_names](std::string filename){
+		//initiate a vector variable called detection that will only contain bbox_t type data 
+		std::string path = "https://s3-us-west-2.amazonaws.com/slyz-turk-resized/renamed/slyz" + filename + ".jpg";		
+		std::vector<bbox_t> detection = detector.detect(path, 0.5, 0);
+		auto json = return_result(detection, obj_names);
+		return json;
+			});
+
+
 	app.port(3205).multithreaded().run();
 }
